@@ -7,6 +7,7 @@
 #include "memory.h"
 using namespace std;
 extern fstream snap;
+extern bool halt;
 void decode_instructions(unsigned int in)
 {
 	unsigned int opcode = in >> 26;
@@ -293,7 +294,7 @@ void decode_instructions(unsigned int in)
 		//Specialized Instruction
 		case 0x3f:
 //			snap << "halt" << endl;
-			exit(0);
+			halt = true;
 			break;
 		//illegal Instructions
 		default:

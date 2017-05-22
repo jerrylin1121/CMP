@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include "regfile.h"
 #include "memory.h"
+#include "virtualmemory.h"
 using namespace std;
 unsigned int ins_mem[256];
 unsigned int num_of_ins;
@@ -47,6 +48,7 @@ void load_data(ifstream *in)
 }
 int load_data(int index, int size)
 {
+	Access_DMemory(index);
 	if(halt) return 0;
 	int rt = data_mem[index];
 	if(size>=2) rt = (rt<<8) + data_mem[index+1];
@@ -57,7 +59,7 @@ int load_data(int index, int size)
 }
 void save_data(int index, int size, int value)
 {
-	if(halt) return;
+	Access_DMemory(index);
 	unsigned int _value = (unsigned int)value;
 	if(size==1){
 		data_mem[index] = _value & 0x000000ff;

@@ -20,5 +20,6 @@ void show_reg(void)
 			snap << "$LO: 0x" << setfill('0') << setw(8) << hex << uppercase << reg_value[LO] << endl;
 	}
 	snap << "PC: 0x" << setfill('0') << setw(8) << hex << uppercase << reg_value[PC] << endl;
+	snap << endl << endl;
 	show_set.clear();
 }
