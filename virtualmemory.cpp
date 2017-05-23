@@ -23,8 +23,9 @@ void Data_Memory(int memory_size, int page_size, int cache_size, int block_size,
 
 void Access_IMemory(int address)
 {
+	int PPN;
 	if(I_TLB->is_hit(address)){
-		int PPN = I_TLB->get_PPN(address);
+		PPN = I_TLB->get_PPN(address);
 		PPN = PPN*I_memory->page_size + address%I_memory->page_size;
 		if(I_cache->is_hit(PPN)){
 		}else{
@@ -32,7 +33,7 @@ void Access_IMemory(int address)
 		}
 	}else{
 		if(I_pagetable->is_hit(address)){
-			int PPN = I_pagetable->get_PPN(address);
+			PPN = I_pagetable->get_PPN(address);
 			PPN = PPN*I_memory->page_size + address%I_memory->page_size;
 			I_TLB->update(address, PPN);
 			if(I_cache->is_hit(PPN)){
@@ -40,13 +41,19 @@ void Access_IMemory(int address)
 				I_cache->update(PPN);
 			}
 		}else{
-			int PPN = I_memory->swap_from_disk();
+			PPN = I_memory->swap_from_disk();
 			I_pagetable->update(address,PPN);
 			I_TLB->update(address, PPN);
 			PPN = PPN*I_memory->page_size + address%I_memory->page_size;
 			I_cache->update(PPN);
 		}
 	}
+//	cout << "VPN : " << address << " PPN: " << PPN << endl;
+//	cout << "Instruction" << endl;
+//	I_cache->print();
+//	I_TLB->print();
+//	I_pagetable->print();
+//	I_memory->print();
 }
 
 void Access_DMemory(int address)

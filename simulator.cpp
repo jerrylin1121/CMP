@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 		snap << "cycle " << dec << cycle << endl;
 		show_reg();
 		++cycle;
-		cout << "cycle: " << dec << cycle << endl;
 		Access_IMemory(reg_value[PC]);
 		reg_value[PC] += 4;
 		decode_instructions(ins_mem[(reg_value[(PC)]/4)-1]);

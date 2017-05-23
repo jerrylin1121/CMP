@@ -33,18 +33,18 @@ public:
 		miss = 0;
 	}
 	bool is_hit(int address){
-		int _tag = (address>>2)/numOfSet;
-		int index = (address>>2)%numOfSet;
+		int _tag = (address/block_size)/numOfSet;
+		int index = (address/block_size)%numOfSet;
+//		cout << "hit     index : " << index << " tag : " << _tag << endl;
 		for(int i=0; i<associative; ++i){
-			if(valid[index+i] && _tag == tag[index+i]){
-		cout << "index : " << index << " tag : " << _tag << endl;
+			if(valid[index*associative+i] && _tag == tag[index*associative+i]){
 				++hit;
-				MRU[index+i] = true;
+				MRU[index*associative+i] = true;
 					if(is_full(index)){
 						for(int j=0; j<associative; ++j){
-							MRU[index+j] = false;
+							MRU[index*associative+j] = false;
 						}
-						MRU[index+i] = true;
+						MRU[index*associative+i] = true;
 					}
 				return true;
 			}
@@ -56,40 +56,64 @@ public:
 		int _PPN = address / page_size;
 		int _tag = (address/block_size)/numOfSet;
 		int index = (address/block_size)%numOfSet;
+//		cout << "update  index : " << index << " tag : " << _tag << " PPN : " << _PPN << endl;
 		if(page_fault){
+//			cout << "PAGE FAULT!!!" << endl;
 			for(int i=0; i<numOfBlock; ++i){
 				if(PPN[i]==_PPN){
+//					cout << i << endl;
 					valid[i] = false;
+					MRU[i] = false;
 				}
 			}
 		}
-		cout << "index : " << index << " tag : " << _tag << endl;
 		for(int i=0; i<associative; ++i){
-			if(associative==1 || !MRU[index+i]){
-				valid[index+i] = true;
-				MRU[index+i] = true;
-				tag[index+i] = _tag;
-				PPN[index+i] = _PPN;
+			if(!valid[index*associative+i] || associative==1){
+				valid[index*associative+i] = true;
+				MRU[index*associative+i] = true;
+				tag[index*associative+i] = _tag;
+				PPN[index*associative+i] = _PPN;
 				if(is_full(index)){
 					for(int j=0; j<associative; ++j){
-						MRU[index+j] = false;
+						MRU[index*associative+j] = false;
 					}
-					MRU[index+i] = true;
+					MRU[index*associative+i] = true;
 				}
-				break;
+				return;
+			}
+		}		
+		for(int i=0; i<associative; ++i){
+			if(!MRU[index*associative+i]){
+				valid[index*associative+i] = true;
+				MRU[index*associative+i] = true;
+				tag[index*associative+i] = _tag;
+				PPN[index*associative+i] = _PPN;
+				if(is_full(index)){
+					for(int j=0; j<associative; ++j){
+						MRU[index*associative+j] = false;
+					}
+					MRU[index*associative+i] = true;
+				}
+				return;
 			}
 		}
 	}
 	bool is_full(int index){
 		for(int i=0; i<associative; ++i){
-			if(!MRU[i]){
+			if(!MRU[index*associative+i]){
 				return false;
 			}
 		}
 		return true;
 	}
 	void print(){
-		report << "# hits: " << hit << endl;
+/*		cout << "Cache :" << endl;
+		for(int i=0; i<numOfBlock; ++i){
+			cout << "index : " << i << " valid : " << valid[i] << " MRU : " << MRU[i] << " tag : " << tag[i] << " PPN : " << PPN[i] << endl;
+		}
+		cout << "# hits: " << hit << endl;
+		cout << "# misses: " << miss << endl << endl;
+*/		report << "# hits: " << hit << endl;
 		report << "# misses: " << miss << endl << endl;
 	}
 };
@@ -162,7 +186,13 @@ public:
 		return 0;
 	}
 	void print(){
-		report << "# hits: " << hit << endl;
+/*		cout << "TLB :" << endl;
+		for(int i=0; i<numOfentry; ++i){
+			cout << "index : " << i << " valid : " << valid[i] << " tag : " << tag[i] << " PPN : " << PPN[i] << endl;
+		}
+		cout << "# hits: " << hit << endl;
+		cout << "# misses: " << miss << endl << endl;
+*/		report << "# hits: " << hit << endl;
 		report << "# misses: " << miss << endl << endl;
 	}
 };
@@ -212,7 +242,13 @@ public:
 		return 0;
 	}
 	void print(){
-		report << "# hits: " << hit << endl;
+/*		cout << "Pagetable :" << endl;
+		for(int i=0; i<numOfentry; ++i){
+			cout << "index : " << i << " valid : " << valid[i] << " PPN : " << PPN[i] << endl;
+		}
+		cout << "# hits: " << hit << endl;
+		cout << "# misses: " << miss << endl << endl;
+*/		report << "# hits: " << hit << endl;
 		report << "# misses: " << miss << endl << endl;
 	}
 };
@@ -242,6 +278,13 @@ public:
 		LRU.push_back(f);
 		return f;
 	}
+	void print(){
+/*		cout << "Memory :" << endl;
+		for(int i=0; i<numOfPage; ++i){
+			cout << "index : " << i << " valid : " << valid[i] << endl;
+		}
+		cout << endl;
+*/	}
 };
 
 extern Cache *I_cache, *D_cache;
